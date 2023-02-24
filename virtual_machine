@@ -1,0 +1,120 @@
+$azrg = "psrg"
+$azvnet = "myvnet"
+$subnet = "mysubent"
+$mysubnetAddressPrefix = "10.0.0.0/24"
+$azurePublicIpName = "mypip"
+$azureNicName = "mynic"
+New-AzVirtualNetwork -Name $azvnet -ResourceGroupName $azrg -Location "East US" -AddressPrefix "10.0.0.0/16"
+# set vnet details in variable value
+$vNet = Get-AzVirtualNetwork -Name $azvnet -ResourceGroupName $azrg
+#create subnet configuration
+Add-AzVirtualNetworkSubnetConfig -Name $subnet -AddressPrefix $mysubnetAddressPrefix -VirtualNetwork $vNet
+#final command to set subnet configuration to Virtual Network.
+$vNet | Set-AzVirtualNetwork
+#Create the public IP address.
+New-AzPublicIpAddress -Name $azurePublicIpName -ResourceGroupName $azrg -Location "eastus" -AllocationMethod Static 
+New-AzNetworkInterface -Name $azureNicName -ResourceGroupName $azrg -Location "eastus" -SubnetId mysubnet.Id -PublicIpAddressId mypip.Id
+--------------------------------------------------------
+https://bradleyschacht.com/create-new-azure-vm-with-powershell/ 
+# Login to Azure
+Login-AzureRmAccount
+
+# Set the subscription
+Select-AzureRmSubscription -SubscriptionId <your-subscription-id>
+
+# Set the resource group name
+$rgName = "<your-resource-group-name>"
+
+# Set the virtual machine name
+$vmName = "<your-virtual-machine-name>"
+
+# Set the virtual machine size
+$vmSize = "Standard_B1s"
+
+# Set the virtual network name
+$vnetName = "<your-virtual-network-name>"
+
+# Set the subnet name
+$subnetName = "<your-subnet-name>"
+
+# Set the public IP address name
+$pipName = "<your-public-ip-address-name>"
+
+# Set the network security group name
+$nsgName = "<your-network-security-group-name>"
+
+# Set the username and password for the virtual machine
+$username = "<your-username>"
+$password = "<your-password>" | ConvertTo-SecureString -AsPlainText -Force
+
+# Create the virtual network
+New-AzureRmVirtualNetwork -Name $vnetName -ResourceGroupName $rgName -Location "East US" -AddressPrefix "10.0.0.0/16"
+
+# Create the subnet
+New-AzureRmSubnet -Name $subnetName -VirtualNetworkName $vnetName -ResourceGroupName $rgName -AddressPrefix "10.0.0.0/24"
+
+# Create the public IP address
+New-AzureRmPublicIpAddress -Name $pipName -ResourceGroupName $rgName -Location "East US" -AllocationMethod Dynamic
+
+# Create the network security group
+New-AzureRmNetworkSecurityGroup -Name $nsgName -ResourceGroupName $rgName -Location "East US"
+
+# Create the virtual machine configuration
+$vmConfig = New-AzureRmVMConfig -VMName $vmName -VMSize $vmSize
+
+# Add the virtual network and subnet to the virtual machine configuration
+$vmConfig = Add-AzureRmVMNetworkInterface -VM $vmConfig -Name $vmName"NIC" -ResourceGroupName $rgName -PublicIpAddressName $pipName -NetworkSecurityGroupName $nsgName -SubnetName $subnetName
+
+# Add the virtual machine configuration to the virtual machine
+$vmConfig = Set-AzureRmVMOperatingSystem -VM $vmConfig -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate
+$vmConfig = Set-AzureRmVMSourceImage -VM $vmConfig -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus 2019-Datacenter -Version latest
+
+# Create the virtual machine
+New-AzureRmVM -ResourceGroupName $rgName -Location "East US" -VM $vmConfig
+
+
+Note: Replace the placeholder values in angle brackets (e.g. <your-resource-group-name>) with your actual values.
+
+-------------------------------------------------
+# Set the resource group name
+$rgName = "PSRG"
+# Set the virtual machine name
+$vmName = "PSvm"
+
+# Set the virtual machine size
+$vmSize = "Standard_B1s"
+
+# Set the virtual network name
+$vnetName = "PSvnet"
+
+# Set the subnet name
+$subnetName = "PSsubnet"
+
+# Set the public IP address name
+$pipName = "PSpip"
+
+# Set the network security group name
+$nsgName = "PSsg"
+
+# Set the username and password for the virtual machine
+$username = "cloud"
+$password = "Password@123" | ConvertTo-SecureString -AsPlainText -Force
+# create Resource Group
+New-AzResourceGroup -Name $rgName -Location "EastUS"
+
+# Create the virtual network
+New-AzVirtualNetwork -Name $vnetName -ResourceGroupName $rgName -Location "East US" -AddressPrefix "10.0.0.0/16"
+# Create the subnet
+#New-AzVirtualNetwork -VirtualNetworkName $vnetName -ResourceGroupName $rgName -Subnet -Name $subnetName -AddressPrefix "10.0.0.0/24"
+New-AzVirtualNetworkSubnetConfig -Name $subnetName -AddressPrefix "10.0.0.0/24"
+# Create the public IP address
+New-AzPublicIpAddress -Name $pipName -ResourceGroupName $rgName -Location "East US" -AllocationMethod Dynamic
+# Create the network security group
+New-AzNetworkSecurityGroup -Name $nsgName -ResourceGroupName $rgName -Location "East US"
+# Create the virtual machine configuration
+$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize
+# Define the NIC name
+$nicName = "myNIC"
+# Create a NIC configuration
+#$nic = New-AzNetworkInterface -Name "$nicName" -ResourceGroupName "$rgName" -Location "East US" -SubnetId $subnetName
+Get-AzVirtualNetworkSubnetConfig -Name PSsubnet -VirtualNetwork PSvnet
